@@ -1,0 +1,44 @@
+name: ComEd price check
+
+on:
+  schedule:
+    # Every 10 minutes. GitHub queues cron jobs and may run them a few
+    # minutes late under load — that's fine for this use case.
+    - cron: "*/10 * * * *"
+  workflow_dispatch: {} # lets you trigger a run by hand from the Actions tab
+
+# Needed so the job can commit the updated state.json back to the repo.
+permissions:
+  contents: write
+
+# If a run is still going when the next one fires, skip rather than stack up.
+concurrency:
+  group: comed-price-check
+  cancel-in-progress: false
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Check price and notify IFTTT
+        env:
+          IFTTT_KEY: ${{ secrets.IFTTT_KEY }}
+        run: node check-price.js
+
+      - name: Persist state
+        run: |
+          if [[ -n "$(git status --porcelain state.json)" ]]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add state.json
+            git commit -m "State change: $(date -u +%Y-%m-%dT%H:%M:%SZ)"
+            git push
+          else
+            echo "No state change to commit."
+          fi
