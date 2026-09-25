@@ -1,7 +1,7 @@
 {
-  "state": "high",
-  "price": 7,
-  "period": "day",
-  "threshold": 5,
-  "changedAt": "2026-09-25T00:04:13.493Z"
+  "state": "low",
+  "price": 2.3,
+  "period": "night",
+  "threshold": 3,
+  "changedAt": "2026-09-25T04:51:14.116Z"
 }
